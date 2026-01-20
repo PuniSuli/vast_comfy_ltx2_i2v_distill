@@ -11,8 +11,8 @@ APT_PACKAGES=(
 )
 
 PIP_PACKAGES=(
-    #"package-1"
-    #"package-2"
+    "hf-transfer"
+    "huggingface_hub"
 )
 
 NODES=(
@@ -181,18 +181,48 @@ function provisioning_has_valid_civitai_token() {
     fi
 }
 
-# Download from $1 URL to $2 file path
+# Download from $1 URL to $2 directory
 function provisioning_download() {
-    if [[ -n $HF_TOKEN && $1 =~ ^https://([a-zA-Z0-9_-]+\.)?huggingface\.co(/|$|\?) ]]; then
-        auth_token="$HF_TOKEN"
-    elif 
-        [[ -n $CIVITAI_TOKEN && $1 =~ ^https://([a-zA-Z0-9_-]+\.)?civitai\.com(/|$|\?) ]]; then
-        auth_token="$CIVITAI_TOKEN"
-    fi
-    if [[ -n $auth_token ]];then
-        wget --header="Authorization: Bearer $auth_token" -qnc --content-disposition --show-progress -e dotbytes="${3:-4M}" -P "$2" "$1"
+    # Check if it's a Hugging Face URL
+    if [[ $1 =~ ^https://huggingface\.co/([^/]+)/([^/]+)/resolve/([^/]+)/(.*)$ ]]; then
+        repo_owner="${BASH_REMATCH[1]}"
+        repo_name="${BASH_REMATCH[2]}"
+        repo_id="$repo_owner/$repo_name"
+        filename="${BASH_REMATCH[4]}"
+        
+        printf "  Detected Hugging Face URL. Using high-speed CLI...\n"
+        
+        # Enable high-speed transfer
+        export HF_HUB_ENABLE_HF_TRANSFER=1
+        
+        # Use HF_TOKEN if available
+        local token_auth=""
+        if [[ -n $HF_TOKEN ]]; then
+            token_auth="--token $HF_TOKEN"
+        fi
+
+        # Execute high-speed download
+        huggingface-cli download \
+            "$repo_id" \
+            "$filename" \
+            --local-dir "$2" \
+            --local-dir-use-symlinks False \
+            $token_auth
+
     else
-        wget -qnc --content-disposition --show-progress -e dotbytes="${3:-4M}" -P "$2" "$1"
+        # Fallback for CivitAI or other URLs
+        if [[ -n $CIVITAI_TOKEN && $1 =~ ^https://([a-zA-Z0-9_-]+\.)?civitai\.com(/|$|\?) ]]; then
+            auth_token="$CIVITAI_TOKEN"
+        elif [[ -n $HF_TOKEN && $1 =~ ^https://([a-zA-Z0-9_-]+\.)?huggingface\.co(/|$|\?) ]]; then
+            # This handles HF links that don't match the /resolve/ pattern (standard wget)
+            auth_token="$HF_TOKEN"
+        fi
+
+        if [[ -n $auth_token ]]; then
+            wget --header="Authorization: Bearer $auth_token" -qnc --content-disposition --show-progress -e dotbytes="${3:-4M}" -P "$2" "$1"
+        else
+            wget -qnc --content-disposition --show-progress -e dotbytes="${3:-4M}" -P "$2" "$1"
+        fi
     fi
 }
 
