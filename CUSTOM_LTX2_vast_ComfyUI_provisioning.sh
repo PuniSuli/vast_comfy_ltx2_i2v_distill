@@ -202,7 +202,7 @@ function provisioning_download() {
         fi
 
         # Execute high-speed download
-        huggingface-cli download \
+        hf download \
             "$repo_id" \
             "$filename" \
             --local-dir "$2" \
