@@ -206,7 +206,6 @@ function provisioning_download() {
             "$repo_id" \
             "$filename" \
             --local-dir "$2" \
-            --local-dir-use-symlinks False \
             $token_auth
 
     else
