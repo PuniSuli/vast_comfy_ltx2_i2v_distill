@@ -200,8 +200,8 @@ function provisioning_download() {
         repo_name="${BASH_REMATCH[2]}"
         repo_id="$repo_owner/$repo_name"
 
-        full_path="${BASH_REMATCH[4]}"
-        filename="${full_path##*/}"
+        filename="${BASH_REMATCH[4]}"
+        #filename="${full_path##*/}"
         
         printf "  Detected Hugging Face URL. Using high-speed CLI...\n"
         
