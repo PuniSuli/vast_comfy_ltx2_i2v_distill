@@ -24,6 +24,8 @@ NODES=(
     "https://github.com/city96/ComfyUI-GGUF"
     "https://github.com/monnky/ComfyUI-Monnky-LTXV2"
 
+    "https://github.com/crystian/ComfyUI-Crystools"
+
     "https://github.com/rgthree/rgthree-comfy"
     "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite"
     "https://github.com/yolain/ComfyUI-Easy-Use"
